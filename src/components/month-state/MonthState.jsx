@@ -144,7 +144,7 @@ const MonthState = () => {
 
       const { access } = JSON.parse(tokens);
       
-      const response = await fetch(`http://159.223.105.245:8000/api/chatqa/result/statistics/${year}/${month}/?reload=${reload}`, {
+      const response = await fetch(`https://cb-tools.qodeq.net/api/chatqa/result/statistics/${year}/${month}/?reload=${reload}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${access}`,

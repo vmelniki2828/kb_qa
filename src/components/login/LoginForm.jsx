@@ -13,7 +13,7 @@ const LoginForm = () => {
     try {
       console.log('Используемый токен:', accessToken);
       
-      const response = await fetch('http://159.223.105.245:8000/api/user/', {
+      const response = await fetch('https://cb-tools.qodeq.net/api/user/', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
@@ -40,7 +40,7 @@ const LoginForm = () => {
     const credentials = { username, password };
     
     try {
-      const response = await fetch('http://159.223.105.245:8000/api/token/login', {
+      const response = await fetch('https://cb-tools.qodeq.net/api/token/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

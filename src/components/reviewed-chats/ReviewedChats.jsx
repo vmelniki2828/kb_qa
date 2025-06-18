@@ -839,7 +839,7 @@ const ReviewedChats = () => {
       const { access } = JSON.parse(tokens);
       
       // Формируем URL с параметрами
-      let url = `http://159.223.105.245:8000/api/chatqa/reviewed-chats?page=${page}`;
+      let url = `https://cb-tools.qodeq.net/api/chatqa/reviewed-chats?page=${page}`;
       if (colorFilter) {
         url += `&chat_color=${colorFilter}`;
       }
@@ -910,7 +910,7 @@ const ReviewedChats = () => {
 
       const { access } = JSON.parse(tokens);
       
-      const response = await fetch('http://159.223.105.245:8000/api/chatqa/projects', {
+      const response = await fetch('https://cb-tools.qodeq.net/api/chatqa/projects', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${access}`,
@@ -1097,7 +1097,7 @@ const ReviewedChats = () => {
 
       const { access } = JSON.parse(tokens);
       
-      const response = await fetch(`http://159.223.105.245:8000/api/chatqa/reviewed-chats/${chatPk}`, {
+      const response = await fetch(`https://cb-tools.qodeq.net/api/chatqa/reviewed-chats/${chatPk}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${access}`,
@@ -1145,9 +1145,9 @@ const ReviewedChats = () => {
         const { access } = JSON.parse(tokens);
         
         console.log('Текст вопроса для запроса:', result.question);
-        console.log('Полный URL запроса:', `http://159.223.105.245:8000/api/chatqa/result/tags?question=${result.question}`);
+        console.log('Полный URL запроса:', `https://cb-tools.qodeq.net/api/chatqa/result/tags?question=${result.question}`);
         
-        const response = await fetch(`http://159.223.105.245:8000/api/chatqa/result/tags?question=${result.question}`, {
+        const response = await fetch(`https://cb-tools.qodeq.net/api/chatqa/result/tags?question=${result.question}`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${access}`,
@@ -1257,7 +1257,7 @@ const ReviewedChats = () => {
       const { access } = JSON.parse(tokens);
       const newCheckedValue = !selectedChat.checked;
       
-      const response = await fetch(`http://159.223.105.245:8000/api/chatqa/reviewed-chats/${selectedChat.pk}`, {
+      const response = await fetch(`https://cb-tools.qodeq.net/api/chatqa/reviewed-chats/${selectedChat.pk}`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${access}`,
@@ -1310,7 +1310,7 @@ const ReviewedChats = () => {
 
       const { access } = JSON.parse(tokens);
       
-      const response = await fetch(`http://159.223.105.245:8000/api/chatqa/reviewed-chats/${selectedChat.pk}`, {
+      const response = await fetch(`https://cb-tools.qodeq.net/api/chatqa/reviewed-chats/${selectedChat.pk}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${access}`,
@@ -1409,7 +1409,7 @@ const ReviewedChats = () => {
 
       console.log('Отправляем данные результата:', [resultData]);
 
-      const response = await fetch('http://159.223.105.245:8000/api/chatqa/result/', {
+      const response = await fetch('https://cb-tools.qodeq.net/api/chatqa/result/', {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${access}`,

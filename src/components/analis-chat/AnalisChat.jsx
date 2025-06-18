@@ -459,7 +459,7 @@ const AnalisChat = () => {
       const { access } = JSON.parse(tokens);
       const encodedQuestion = encodeURIComponent(question);
       
-      const response = await fetch(`http://159.223.105.245:8000/api/chatqa/result/tags?question=${encodedQuestion}`, {
+      const response = await fetch(`https://cb-tools.qodeq.net/api/chatqa/result/tags?question=${encodedQuestion}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${access}`,
@@ -549,7 +549,7 @@ const AnalisChat = () => {
 
       const { access } = JSON.parse(tokens);
       
-      const response = await fetch('http://159.223.105.245:8000/api/chatqa/result/', {
+      const response = await fetch('https://cb-tools.qodeq.net/api/chatqa/result/', {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${access}`,
@@ -643,7 +643,7 @@ const AnalisChat = () => {
       const { access } = JSON.parse(tokens);
       
       // Формируем URL с параметрами
-      let url = 'http://159.223.105.245:8000/api/chatqa/reviewed-chats/anonymous';
+      let url = 'https://cb-tools.qodeq.net/api/chatqa/reviewed-chats/anonymous';
       const params = new URLSearchParams();
       
       if (startDate) {
