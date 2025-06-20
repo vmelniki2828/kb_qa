@@ -412,6 +412,7 @@ const AnalisChat = () => {
   const [loadingTags, setLoadingTags] = useState({});
   const [selectedTags, setSelectedTags] = useState({});
   const [resultComments, setResultComments] = useState({});
+  const [generalComment, setGeneralComment] = useState('');
 
   const getAuthorInitials = (message) => {
     const authorType = message.author?.type;
@@ -514,7 +515,7 @@ const AnalisChat = () => {
   };
 
   const submitAnalysis = async () => {
-    // Формируем массив результатов в нужном формате
+    // Сначала отправляем результаты анализа (если есть изменения)
     const results = [];
     
     if (chatData.results) {
@@ -549,21 +550,48 @@ const AnalisChat = () => {
 
       const { access } = JSON.parse(tokens);
       
-      const response = await fetch('https://cb-tools.qodeq.net/api/chatqa/result/', {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${access}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(results),
-      });
+      // Отправляем результаты анализа если есть изменения
+      if (results.length > 0) {
+        const resultResponse = await fetch('https://cb-tools.qodeq.net/api/chatqa/result/', {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${access}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(results),
+        });
 
-      if (!response.ok) {
-        throw new Error(`Ошибка HTTP: ${response.status}`);
+        if (!resultResponse.ok) {
+          throw new Error(`Ошибка HTTP при отправке результатов: ${resultResponse.status}`);
+        }
+
+        const resultResponseData = await resultResponse.json();
+        console.log('Ответ сервера на результаты:', resultResponseData);
       }
 
-      const responseData = await response.json();
-      console.log('Ответ сервера:', responseData);
+      // Теперь отправляем PATCH запрос для отметки чата как проверенного
+      if (chatData.pk) {
+        const chatResponse = await fetch(`https://cb-tools.qodeq.net/api/chatqa/reviewed-chats/${chatData.pk}`, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${access}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            checked: true,
+            comment: generalComment
+          }),
+        });
+
+        if (!chatResponse.ok) {
+          throw new Error(`Ошибка HTTP при обновлении чата: ${chatResponse.status}`);
+        }
+
+        const chatResponseData = await chatResponse.json();
+        console.log('Ответ сервера на обновление чата:', chatResponseData);
+        
+        Notify.success('Анализ успешно отправлен!');
+      }
       
       // Перенаправляем на главную страницу (где форма получения чата)
       setChatData(null);
@@ -572,6 +600,7 @@ const AnalisChat = () => {
       setLoadingTags({});
       setSelectedTags({});
       setResultComments({});
+      setGeneralComment('');
       
     } catch (error) {
       console.error('Ошибка отправки анализа:', error);
@@ -1135,12 +1164,55 @@ const AnalisChat = () => {
 
 
 
+                {/* Общий комментарий */}
+                {chatData.results && Object.keys(chatData.results).length > 0 && (
+                  <div style={{ marginTop: '20px', marginBottom: '16px' }}>
+                    <label style={{
+                      color: '#fff',
+                      fontSize: '14px',
+                      fontWeight: 'bold',
+                      marginBottom: '8px',
+                      display: 'block'
+                    }}>
+                      Комментарии:
+                    </label>
+                    <textarea
+                      style={{
+                        width: '100%',
+                        height: '80px',
+                        padding: '12px',
+                        borderRadius: '8px',
+                        border: '1px solid rgba(108, 71, 255, 0.3)',
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        color: '#fff',
+                        fontSize: '14px',
+                        fontFamily: 'inherit',
+                        resize: 'none',
+                        outline: 'none',
+                        transition: 'border-color 0.2s ease, background-color 0.2s ease',
+                        boxSizing: 'border-box',
+                      }}
+                      value={generalComment}
+                      onChange={(e) => setGeneralComment(e.target.value)}
+                      placeholder="Комментарии к анализу..."
+                      onFocus={(e) => {
+                        e.target.style.borderColor = '#6C47FF';
+                        e.target.style.background = 'rgba(255, 255, 255, 0.08)';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = 'rgba(108, 71, 255, 0.3)';
+                        e.target.style.background = 'rgba(255, 255, 255, 0.05)';
+                      }}
+                    />
+                  </div>
+                )}
+
                 {/* Кнопка отправить */}
                 {chatData.results && Object.keys(chatData.results).length > 0 && (
                   <div style={{ 
                     display: 'flex', 
                     justifyContent: 'center', 
-                    marginTop: '20px',
+                    marginTop: '8px',
                     paddingBottom: '20px'
                   }}>
                     <button

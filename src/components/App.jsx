@@ -1,29 +1,10 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import LoginForm from './login/LoginForm';
-import Sidebar from './Sidebar';
 import ReviewedChats from './reviewed-chats/ReviewedChats';
 import MonthState from './month-state/MonthState';
 import AnalisChat from './analis-chat/AnalisChat';
-
-const mainBg = {
-  minHeight: '100vh',
-  background: '#12092A',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-};
-
-function Home() {
-  return (
-    <>
-      <Sidebar />
-      <div style={mainBg}>
-        <h1 style={{ color: '#fff', textAlign: 'center', fontSize: 40 }}>Главная страница</h1>
-    </div>
-    </>
-  );
-}
+import AgentStats from './agent-stats/AgentStats';
 
 function RequireAuth({ children }) {
   const token = localStorage.getItem('tokens');
@@ -52,7 +33,7 @@ function App() {
         <Route path="/login" element={<LoginForm />} />
         <Route path="/" element={
           <RequireAuth>
-            <Home />
+            <Navigate to="/reviewed_chats" replace />
           </RequireAuth>
         } />
         <Route path="/reviewed_chats" element={
@@ -68,6 +49,11 @@ function App() {
         <Route path="/analis_chat" element={
           <RequireAuth>
             <AnalisChat />
+          </RequireAuth>
+        } />
+        <Route path="/agent_stats/:id" element={
+          <RequireAuth>
+            <AgentStats />
           </RequireAuth>
         } />
       </Routes>

@@ -29,7 +29,7 @@ const thStyle = {
   background: 'rgba(108, 71, 255, 0.3)',
   color: '#fff',
   padding: '12px 16px',
-  textAlign: 'left',
+  textAlign: 'center',
   fontWeight: 'bold',
   borderBottom: '2px solid rgba(108, 71, 255, 0.5)',
 };
@@ -38,6 +38,7 @@ const tdStyle = {
   padding: '12px 16px',
   borderBottom: '1px solid rgba(255,255,255,0.1)',
   color: 'rgba(255,255,255,0.9)',
+  textAlign: 'center',
 };
 
 const statusBadgeStyle = {
@@ -91,6 +92,7 @@ const userCellStyle = {
   ...tdStyle,
   display: 'flex',
   alignItems: 'center',
+  justifyContent: 'center',
 };
 
 const paginationStyle = {
@@ -806,7 +808,6 @@ const ReviewedChats = () => {
   const [agentFilter, setAgentFilter] = useState('');
   const [chatIdFilter, setChatIdFilter] = useState('');
   const [checkedFilter, setCheckedFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
   const [threadIdFilter, setThreadIdFilter] = useState('');
   const [createdAfterFilter, setCreatedAfterFilter] = useState('');
   const [createdBeforeFilter, setCreatedBeforeFilter] = useState('');
@@ -961,7 +962,7 @@ const ReviewedChats = () => {
     
     const fetchData = () => {
       setCurrentPage(1);
-      fetchReviewedChats(1, chatColorFilter, selectedProject, userTypeFilter, agentFilter, chatIdFilter, checkedFilter, statusFilter, threadIdFilter, createdAfterFilter, createdBeforeFilter);
+      fetchReviewedChats(1, chatColorFilter, selectedProject, userTypeFilter, agentFilter, chatIdFilter, checkedFilter, '', threadIdFilter, createdAfterFilter, createdBeforeFilter);
     };
     
     // Если есть активные текстовые фильтры - используем debounce
@@ -973,19 +974,19 @@ const ReviewedChats = () => {
       fetchData();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isInitialized, chatColorFilter, selectedProject, userTypeFilter, agentFilter, chatIdFilter, checkedFilter, statusFilter, threadIdFilter, createdAfterFilter, createdBeforeFilter]);
+  }, [isInitialized, chatColorFilter, selectedProject, userTypeFilter, agentFilter, chatIdFilter, checkedFilter, threadIdFilter, createdAfterFilter, createdBeforeFilter]);
 
   const handlePrevPage = () => {
     if (chatsData?.previous) {
       const prevPage = currentPage - 1;
-      fetchReviewedChats(prevPage, chatColorFilter, selectedProject, userTypeFilter, agentFilter, chatIdFilter, checkedFilter, statusFilter, threadIdFilter, createdAfterFilter, createdBeforeFilter);
+      fetchReviewedChats(prevPage, chatColorFilter, selectedProject, userTypeFilter, agentFilter, chatIdFilter, checkedFilter, '', threadIdFilter, createdAfterFilter, createdBeforeFilter);
     }
   };
 
   const handleNextPage = () => {
     if (chatsData?.next) {
       const nextPage = currentPage + 1;
-      fetchReviewedChats(nextPage, chatColorFilter, selectedProject, userTypeFilter, agentFilter, chatIdFilter, checkedFilter, statusFilter, threadIdFilter, createdAfterFilter, createdBeforeFilter);
+      fetchReviewedChats(nextPage, chatColorFilter, selectedProject, userTypeFilter, agentFilter, chatIdFilter, checkedFilter, '', threadIdFilter, createdAfterFilter, createdBeforeFilter);
     }
   };
 
@@ -1024,9 +1025,9 @@ const ReviewedChats = () => {
   };
 
   const getProgressColor = (score) => {
-    if (score >= 90) return 'linear-gradient(90deg, #4CAF50 0%, #8BC34A 100%)';
-    if (score >= 70) return 'linear-gradient(90deg, #FFC107 0%, #FF9800 100%)';
-    return 'linear-gradient(90deg, #FF5722 0%, #F44336 100%)';
+    if (score >= 90) return 'linear-gradient(90deg, #4CAF50 0%, #8BC34A 100%)'; // 90-100% - зелёные
+    if (score >= 80) return 'linear-gradient(90deg, #FFC107 0%, #FF9800 100%)'; // 80-89% - желтые
+    return 'linear-gradient(90deg, #FF5722 0%, #F44336 100%)'; // 0-79% - красные
   };
 
   const getInitials = (username) => {
@@ -1132,6 +1133,8 @@ const ReviewedChats = () => {
       setSelectedResult(result);
       setCurrentDecision(result.decision);
       setCurrentComment(result.manager_comment || '');
+      // Инициализируем selectedTags существующими тегами результата
+      setSelectedTags(result.tags || []);
       setIsResultModalOpen(true);
 
       // Отправляем запрос для получения тегов
@@ -1350,7 +1353,7 @@ const ReviewedChats = () => {
     if (selectedProject) count++;
     if (userTypeFilter) count++;
     if (checkedFilter) count++;
-    if (statusFilter) count++;
+
     if (agentFilter) count++;
     if (chatIdFilter) count++;
     if (threadIdFilter) count++;
@@ -2103,7 +2106,6 @@ const ReviewedChats = () => {
         <tbody>
           {chatsData.results.map((chat, index) => {
             const userName = chat.username && chat.username.length > 0 ? chat.username.join(', ') : `User${chat.pk || index + 1}`;
-            const statusColors = getStatusColor(chat.status);
             const score = chat.score || 0;
             
             return (
@@ -2149,14 +2151,28 @@ const ReviewedChats = () => {
                     <span style={{ fontSize: '12px', fontWeight: 'bold' }}>{score}%</span>
                   </div>
                 </td>
-                <td style={tdStyle}>
-                  <span style={{
-                    ...statusBadgeStyle,
-                    background: statusColors.bg,
-                    color: statusColors.color
+                <td style={{...tdStyle, textAlign: 'center'}}>
+                  <div style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    background: chat.checked 
+                      ? 'linear-gradient(135deg, rgba(76, 175, 80, 0.2) 0%, rgba(139, 195, 74, 0.2) 100%)'
+                      : 'linear-gradient(135deg, rgba(244, 67, 54, 0.2) 0%, rgba(255, 87, 34, 0.2) 100%)',
+                    border: chat.checked 
+                      ? '2px solid rgba(76, 175, 80, 0.5)'
+                      : '2px solid rgba(244, 67, 54, 0.5)',
+                    color: chat.checked ? '#4CAF50' : '#F44336',
+                    fontSize: '16px',
+                    fontWeight: 'bold',
+                    transition: 'all 0.3s ease',
+                    cursor: 'default'
                   }}>
-                    {chat.status || 'unknown'}
-                  </span>
+                    {chat.checked ? '✓' : '✕'}
+                  </div>
                 </td>
                 <td style={{...tdStyle, fontFamily: 'monospace'}}>{formatDuration(chat.chat_duration)}</td>
                 <td style={{...tdStyle, fontSize: '12px'}}>{formatDate(chat.created_at)}</td>
@@ -2226,10 +2242,16 @@ const ReviewedChats = () => {
           
           <div style={{
             ...modalBodyStyle,
-            overflowY: 'visible',
-            maxHeight: 'none'
+            overflowY: 'auto',
+            maxHeight: '70vh',
+            display: 'flex',
+            flexDirection: 'column'
           }}>
-            <div style={{ padding: '20px 0' }}>
+            <div style={{ 
+              flex: 1,
+              overflowY: 'auto',
+              padding: '20px 20px 0 20px'
+            }}>
               
               {/* Решение */}
               <div style={{ marginBottom: '20px' }}>
@@ -2274,7 +2296,7 @@ const ReviewedChats = () => {
                   onChange={(e) => setCurrentComment(e.target.value)}
                   style={{
                     width: '100%',
-                    height: '120px',
+                    height: '80px',
                     padding: '12px',
                     borderRadius: '8px',
                     border: '1px solid rgba(255, 255, 255, 0.2)',
@@ -2372,7 +2394,7 @@ const ReviewedChats = () => {
 
                   {/* Список доступных тегов */}
                   <div style={{
-                    maxHeight: '150px',
+                    maxHeight: '120px',
                     overflowY: 'auto',
                     border: '1px solid rgba(255, 255, 255, 0.1)',
                     borderRadius: '8px',
@@ -2417,7 +2439,14 @@ const ReviewedChats = () => {
                 </div>
               )}
 
-              {/* Кнопка сохранить */}
+            </div>
+
+            {/* Кнопка сохранить - фиксированная внизу */}
+            <div style={{
+              padding: '20px',
+              borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+              background: '#12092A'
+            }}>
               <button
                 style={{
                   background: '#4CAF50',
@@ -2443,7 +2472,6 @@ const ReviewedChats = () => {
               >
                 Сохранить
               </button>
-
             </div>
           </div>
         </div>
@@ -2490,8 +2518,6 @@ const ReviewedChats = () => {
               setUserTypeFilter={setUserTypeFilter}
               checkedFilter={checkedFilter}
               setCheckedFilter={setCheckedFilter}
-              statusFilter={statusFilter}
-              setStatusFilter={setStatusFilter}
               agentFilter={agentFilter}
               setAgentFilter={setAgentFilter}
               chatIdFilter={chatIdFilter}

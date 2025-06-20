@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Sidebar from '../Sidebar';
 
 const mainBg = {
@@ -100,6 +101,7 @@ const spinnerKeyframes = `
 `;
 
 const MonthState = () => {
+  const navigate = useNavigate();
   const [statistics, setStatistics] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -174,6 +176,10 @@ const MonthState = () => {
 
   const handleReloadStatistics = () => {
     fetchStatistics(selectedYear, selectedMonth, 1);
+  };
+
+  const handleAgentClick = (agentId) => {
+    navigate(`/agent_stats/${agentId}`);
   };
 
   const handleSort = (key) => {
@@ -370,8 +376,18 @@ const MonthState = () => {
                         textAlign: key === 'name' ? 'left' : 'center',
                         fontWeight: key === 'name' ? 'bold' : '500',
                         fontSize: '14px',
-                        whiteSpace: 'nowrap'
-                      }}>
+                        whiteSpace: 'nowrap',
+                        cursor: key === 'name' ? 'pointer' : 'default'
+                      }}
+                      onClick={key === 'name' ? () => handleAgentClick(operator.id) : undefined}
+                      onMouseEnter={key === 'name' ? (e) => {
+                        e.target.style.background = 'rgba(108, 71, 255, 0.2)';
+                        e.target.style.textDecoration = 'underline';
+                      } : undefined}
+                      onMouseLeave={key === 'name' ? (e) => {
+                        e.target.style.background = 'transparent';
+                        e.target.style.textDecoration = 'none';
+                      } : undefined}>
                         {key === 'name' ? operator[key] : formatStatValue(key, operator[key])}
                       </td>
                     ))}

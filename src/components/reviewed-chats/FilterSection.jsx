@@ -14,8 +14,6 @@ const FilterSection = ({
   setUserTypeFilter,
   checkedFilter,
   setCheckedFilter,
-  statusFilter,
-  setStatusFilter,
   agentFilter,
   setAgentFilter,
   chatIdFilter,
@@ -271,22 +269,7 @@ const FilterSection = ({
               </select>
             </div>
 
-            <div>
-              <span style={filterLabelStyle}>📊 Статус обработки</span>
-              <select
-                style={filterSelectStyle}
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                onFocus={handleSelectFocus}
-                onBlur={handleSelectBlur}
-              >
-                <option value="" style={optionStyle}>🔄 Все статусы</option>
-                <option value="new" style={optionStyle}>🆕 New</option>
-                <option value="inprogress" style={optionStyle}>⏳ Inprogress</option>
-                <option value="done" style={optionStyle}>✅ Done</option>
-                <option value="error" style={optionStyle}>❌ Error</option>
-              </select>
-            </div>
+
           </div>
 
           {/* Группа 2: Проект и пользователи */}
