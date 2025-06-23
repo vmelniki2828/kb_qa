@@ -172,6 +172,145 @@ const modalBodyStyle = {
   color: '#fff',
 };
 
+// Стили для сообщений чата как в ReviewedChats
+const messagesContainerStyleModal = {
+  height: '400px',
+  maxHeight: '400px',
+  overflowY: 'auto',
+  padding: '15px',
+  background: 'rgba(255, 255, 255, 0.02)',
+  borderRadius: '8px',
+  border: '1px solid rgba(255, 255, 255, 0.1)',
+};
+
+const messageStyle = {
+  display: 'flex',
+  marginBottom: '15px',
+  alignItems: 'flex-start',
+  gap: '10px',
+};
+
+const messageStyleLeft = {
+  ...messageStyle,
+  flexDirection: 'row',
+  justifyContent: 'flex-start',
+};
+
+const messageStyleRight = {
+  ...messageStyle,
+  flexDirection: 'row-reverse',
+  justifyContent: 'flex-start',
+};
+
+const messageAvatarStyle = {
+  width: '32px',
+  height: '32px',
+  borderRadius: '50%',
+  background: 'linear-gradient(135deg, #6C47FF 0%, #9D50FF 100%)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  color: '#fff',
+  fontWeight: 'bold',
+  fontSize: '12px',
+  flexShrink: 0,
+};
+
+const messageAvatarStyleCustomer = {
+  ...messageAvatarStyle,
+  background: 'linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%)',
+};
+
+const messageAvatarStyleOperator = {
+  ...messageAvatarStyle,
+  background: 'linear-gradient(135deg, #6C47FF 0%, #9D50FF 100%)',
+};
+
+const messageContentStyle = {
+  flex: 1,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '4px',
+  maxWidth: '70%',
+};
+
+const messageContentStyleLeft = {
+  ...messageContentStyle,
+  alignItems: 'flex-start',
+};
+
+const messageContentStyleRight = {
+  ...messageContentStyle,
+  alignItems: 'flex-end',
+};
+
+const messageHeaderStyle = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
+  marginBottom: '4px',
+};
+
+const messageHeaderStyleLeft = {
+  ...messageHeaderStyle,
+  justifyContent: 'flex-start',
+};
+
+const messageHeaderStyleRight = {
+  ...messageHeaderStyle,
+  justifyContent: 'flex-end',
+  flexDirection: 'row-reverse',
+};
+
+const messageAuthorStyle = {
+  fontSize: '13px',
+  fontWeight: 'bold',
+  color: '#fff',
+};
+
+const messageTimeStyle = {
+  fontSize: '11px',
+  color: 'rgba(255, 255, 255, 0.5)',
+  fontFamily: 'monospace',
+};
+
+const messageBubbleStyle = {
+  background: 'rgba(255, 255, 255, 0.08)',
+  border: '1px solid rgba(255, 255, 255, 0.1)',
+  borderRadius: '12px',
+  padding: '10px 14px',
+  fontSize: '14px',
+  color: 'rgba(255, 255, 255, 0.9)',
+  lineHeight: '1.4',
+  maxWidth: '100%',
+  wordWrap: 'break-word',
+};
+
+const messageBubbleStyleCustomer = {
+  ...messageBubbleStyle,
+  background: 'rgba(76, 175, 80, 0.15)',
+  border: '1px solid rgba(76, 175, 80, 0.3)',
+  borderRadius: '18px 18px 18px 4px',
+};
+
+const messageBubbleStyleOperator = {
+  ...messageBubbleStyle,
+  background: 'rgba(108, 71, 255, 0.15)',
+  border: '1px solid rgba(108, 71, 255, 0.3)',
+  borderRadius: '18px 18px 4px 18px',
+};
+
+const systemMessageStyle = {
+  textAlign: 'center',
+  padding: '8px',
+  margin: '10px 0',
+  fontSize: '12px',
+  color: 'rgba(255, 255, 255, 0.6)',
+  fontStyle: 'italic',
+  borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+  borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+};
+
 const closeButtonStyle = {
   background: 'rgba(244, 67, 54, 0.2)',
   border: '1px solid rgba(244, 67, 54, 0.5)',
@@ -585,6 +724,65 @@ const AgentStats = () => {
     return date.toLocaleString('ru-RU');
   };
 
+  // Функции для обработки сообщений чата как в ReviewedChats
+  const getInitials = (username) => {
+    if (!username) return 'U';
+    if (Array.isArray(username) && username.length > 0) {
+      const name = username[0]; // Берем первое имя из массива
+      return name.split(' ').map(word => word[0]).join('').toUpperCase().slice(0, 2);
+    }
+    if (typeof username === 'string') {
+      return username.split(' ').map(word => word[0]).join('').toUpperCase().slice(0, 2);
+    }
+    return 'U';
+  };
+
+  const getMessageAuthor = (message, chatUsername) => {
+    // Если есть поле author в сообщении, используем его
+    if (message.author) {
+      // Если author - объект с полем name
+      if (typeof message.author === 'object' && message.author.name) {
+        return message.author.name;
+      }
+      // Если author - строка
+      if (typeof message.author === 'string') {
+        return message.author;
+      }
+    }
+    
+    // Определяем автора по содержимому или времени
+    // Системные сообщения
+    if (message.text && (
+      message.text.includes('disconnected') || 
+      message.text.includes('Customer disconnected') ||
+      message.text.includes('Started -')
+    )) {
+      return 'Система';
+    }
+    
+    // Если это первое сообщение или сообщение приветствия, скорее всего оператор
+    if (message.text && (
+      message.text.includes('Здравствуйте') ||
+      message.text.includes('Вас приветствует')
+    )) {
+      return 'Оператор';
+    }
+    
+    // Остальные сообщения от клиента
+    if (chatUsername && Array.isArray(chatUsername) && chatUsername.length > 0) {
+      return chatUsername[0];
+    }
+    
+    return 'Клиент';
+  };
+
+  const getAuthorType = (message) => {
+    if (message.author && typeof message.author === 'object' && message.author.type) {
+      return message.author.type; // 'customer', 'operator', etc.
+    }
+    return 'unknown';
+  };
+
   const handleEditResult = async (result) => {
     try {
       setSelectedResult(result);
@@ -917,42 +1115,82 @@ const AgentStats = () => {
             </div>
 
             {activeTab === 'chat' ? (
-              <div style={{ 
-                height: '400px',
-                maxHeight: '400px',
-                overflowY: 'auto',
-                padding: '15px',
-                background: 'rgba(255, 255, 255, 0.02)',
-                borderRadius: '8px',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-              }}>
+              <div style={messagesContainerStyleModal} className="custom-scrollbar">
+                {/* Заголовок чата */}
+                <div style={systemMessageStyle}>
+                  Started - {formatDateTime(selectedChat.created_at)}
+                </div>
+                
                 {selectedChat.messages && selectedChat.messages.length > 0 ? (
-                  selectedChat.messages.map((message, index) => (
-                    <div key={index} style={{
-                      marginBottom: '15px',
-                      padding: '10px',
-                      background: 'rgba(255, 255, 255, 0.05)',
-                      borderRadius: '8px',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                    }}>
-                      <div style={{ 
-                        fontSize: '12px', 
-                        color: 'rgba(255, 255, 255, 0.6)',
-                        marginBottom: '5px'
-                      }}>
-                        {message.author} - {formatDateTime(message.created_at)}
+                  selectedChat.messages.map((message, index) => {
+                    const author = getMessageAuthor(message, selectedChat.username);
+                    const authorType = getAuthorType(message);
+                    const isSystem = author === 'Система';
+                    
+                    if (isSystem) {
+                      return (
+                        <div key={index} style={systemMessageStyle}>
+                          {message.text}
+                        </div>
+                      );
+                    }
+                    
+                    const isCustomer = authorType === 'customer';
+                    const isOperator = authorType === 'operator';
+                    
+                    return (
+                      <div key={index} style={isCustomer ? messageStyleLeft : messageStyleRight}>
+                        <div style={
+                          isCustomer 
+                            ? messageAvatarStyleCustomer 
+                            : messageAvatarStyleOperator
+                        }>
+                          {getInitials(author)}
+                        </div>
+                        <div style={isCustomer ? messageContentStyleLeft : messageContentStyleRight}>
+                          <div style={isCustomer ? messageHeaderStyleLeft : messageHeaderStyleRight}>
+                            <span style={messageAuthorStyle}>
+                              {author}
+                              {isCustomer && (
+                                <span style={{ 
+                                  fontSize: '10px', 
+                                  color: 'rgba(76, 175, 80, 0.8)', 
+                                  marginLeft: '4px' 
+                                }}>
+                                  (клиент)
+                                </span>
+                              )}
+                              {isOperator && (
+                                <span style={{ 
+                                  fontSize: '10px', 
+                                  color: 'rgba(108, 71, 255, 0.8)', 
+                                  marginLeft: '4px' 
+                                }}>
+                                  (оператор)
+                                </span>
+                              )}
+                            </span>
+                            <span style={messageTimeStyle}>
+                              {new Date(message.created_at).toLocaleTimeString('ru-RU', { 
+                                hour: '2-digit', 
+                                minute: '2-digit',
+                                second: '2-digit'
+                              })}
+                            </span>
+                          </div>
+                          <div style={
+                            isCustomer 
+                              ? messageBubbleStyleCustomer 
+                              : messageBubbleStyleOperator
+                          }>
+                            {message.text || 'Нет текста'}
+                          </div>
+                        </div>
                       </div>
-                      <div style={{ 
-                        fontSize: '14px', 
-                        color: '#fff', 
-                        lineHeight: '1.4'
-                      }}>
-                        {message.text}
-                      </div>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
-                  <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.5)' }}>
+                  <div style={systemMessageStyle}>
                     Нет сообщений
                   </div>
                 )}

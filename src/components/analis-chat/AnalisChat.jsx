@@ -703,13 +703,21 @@ const AnalisChat = () => {
 
       const data = await response.json();
       console.log('Получен чат:', data);
+
       
       // Сохраняем данные чата
       setChatData(data);
       
     } catch (error) {
       console.error('Ошибка получения чата:', error);
-      alert(`Ошибка при получении чата: ${error.message}`);
+      // alert(`Ошибка при получении чата: ${error.message}`);
+      Notify.info('Нет чатов для проверки в указанном диапазоне дат', {
+        position: 'center-top',
+        timeout: 3000,
+        fontSize: '16px',
+        borderRadius: '8px',
+        showOnlyTheLastOne: true,
+      });
     } finally {
       setLoading(false);
     }
