@@ -57,6 +57,41 @@ const spinnerKeyframes = `
   }
 `;
 
+const customScrollbarStyles = `
+  /* Красивый скролл для чата */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    margin: 4px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #6C47FF 0%, #9D50FF 100%);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #7C57FF 0%, #AD60FF 100%);
+    box-shadow: 0 0 10px rgba(108, 71, 255, 0.5);
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:active {
+    background: linear-gradient(135deg, #5C37FF 0%, #8D40FF 100%);
+  }
+  
+  /* Для Firefox */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #6C47FF rgba(255, 255, 255, 0.05);
+  }
+`;
+
 const cardStyle = {
   background: 'rgba(108, 71, 255, 0.1)',
   border: '1px solid rgba(108, 71, 255, 0.3)',
@@ -2281,6 +2316,7 @@ const AgentStats = () => {
   return (
     <>
       <style>{spinnerKeyframes}</style>
+      <style>{customScrollbarStyles}</style>
       <Sidebar />
       <div style={mainBg}>
         <div style={contentStyle}>
