@@ -16,10 +16,16 @@ const FilterSection = ({
   setCheckedFilter,
   agentFilter,
   setAgentFilter,
+  onApplyAgentFilter,
+  appliedAgentFilter,
   chatIdFilter,
   setChatIdFilter,
   threadIdFilter,
   setThreadIdFilter,
+  onApplyChatIdFilter,
+  onApplyThreadIdFilter,
+  appliedChatIdFilter,
+  appliedThreadIdFilter,
   createdAfterFilter,
   setCreatedAfterFilter,
   createdBeforeFilter,
@@ -115,6 +121,13 @@ const FilterSection = ({
     marginTop: '10px'
   };
 
+  const inputInContainerStyle = {
+    ...inputStyle,
+    flex: 1,
+    width: 'auto',
+    marginTop: 0,
+  };
+
   const dateInputStyle = {
     ...inputStyle,
     colorScheme: 'dark',
@@ -130,6 +143,31 @@ const FilterSection = ({
     cursor: 'pointer',
     transition: 'all 0.2s ease',
     marginTop: '8px',
+  };
+
+  const applyButtonStyle = {
+    padding: '8px 10px',
+    background: 'rgba(76, 175, 80, 0.2)',
+    border: '1px solid rgba(76, 175, 80, 0.5)',
+    borderRadius: '8px',
+    color: '#4CAF50',
+    fontSize: '12px',
+    fontWeight: 'bold',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    height: '36px',
+    minWidth: '36px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  };
+
+  const inputContainerStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    marginTop: '10px',
   };
 
   const toggleButtonStyle = {
@@ -313,22 +351,33 @@ const FilterSection = ({
             </div>
 
             <div>
-              <span style={filterLabelStyle}>🧑‍💼 Агент</span>
-              <input
-                type="text"
-                style={inputStyle}
-                value={agentFilter}
-                onChange={(e) => setAgentFilter(e.target.value)}
-                placeholder="Введите имя агента..."
-              />
-              {agentFilter && (
+              <span style={filterLabelStyle}>🧑‍💼 Агент {appliedAgentFilter && <span style={{color: '#4CAF50'}}>✓</span>}</span>
+              <div style={inputContainerStyle}>
+                <input
+                  type="text"
+                  style={inputInContainerStyle}
+                  value={agentFilter}
+                  onChange={(e) => setAgentFilter(e.target.value)}
+                  placeholder="Введите имя агента..."
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      onApplyAgentFilter();
+                    }
+                  }}
+                />
                 <button
-                  style={clearButtonStyle}
-                  onClick={() => setAgentFilter('')}
+                  style={applyButtonStyle}
+                  onClick={onApplyAgentFilter}
+                  onMouseEnter={(e) => {
+                    e.target.style.background = 'rgba(76, 175, 80, 0.4)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.background = 'rgba(76, 175, 80, 0.2)';
+                  }}
                 >
-                  Очистить
+                  ✓
                 </button>
-              )}
+              </div>
             </div>
           </div>
 
@@ -337,41 +386,63 @@ const FilterSection = ({
             <h4 style={{ margin: '0 0 10px 0', color: '#fff', fontSize: '16px' }}>🔢 Идентификаторы</h4>
             
             <div>
-              <span style={filterLabelStyle}>💬 Chat ID</span>
-              <input
-                type="text"
-                style={inputStyle}
-                value={chatIdFilter}
-                onChange={(e) => setChatIdFilter(e.target.value)}
-                placeholder="Введите Chat ID..."
-              />
-              {chatIdFilter && (
+              <span style={filterLabelStyle}>💬 Chat ID {appliedChatIdFilter && <span style={{color: '#4CAF50'}}>✓</span>}</span>
+              <div style={inputContainerStyle}>
+                <input
+                  type="text"
+                  style={inputInContainerStyle}
+                  value={chatIdFilter}
+                  onChange={(e) => setChatIdFilter(e.target.value)}
+                  placeholder="Введите Chat ID..."
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      onApplyChatIdFilter();
+                    }
+                  }}
+                />
                 <button
-                  style={clearButtonStyle}
-                  onClick={() => setChatIdFilter('')}
+                  style={applyButtonStyle}
+                  onClick={onApplyChatIdFilter}
+                  onMouseEnter={(e) => {
+                    e.target.style.background = 'rgba(76, 175, 80, 0.4)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.background = 'rgba(76, 175, 80, 0.2)';
+                  }}
                 >
-                  Очистить
+                  ✓
                 </button>
-              )}
+              </div>
             </div>
 
             <div>
-              <span style={filterLabelStyle}>🧵 Thread ID</span>
-              <input
-                type="text"
-                style={inputStyle}
-                value={threadIdFilter}
-                onChange={(e) => setThreadIdFilter(e.target.value)}
-                placeholder="Введите Thread ID..."
-              />
-              {threadIdFilter && (
+              <span style={filterLabelStyle}>🧵 Thread ID {appliedThreadIdFilter && <span style={{color: '#4CAF50'}}>✓</span>}</span>
+              <div style={inputContainerStyle}>
+                <input
+                  type="text"
+                  style={inputInContainerStyle}
+                  value={threadIdFilter}
+                  onChange={(e) => setThreadIdFilter(e.target.value)}
+                  placeholder="Введите Thread ID..."
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      onApplyThreadIdFilter();
+                    }
+                  }}
+                />
                 <button
-                  style={clearButtonStyle}
-                  onClick={() => setThreadIdFilter('')}
+                  style={applyButtonStyle}
+                  onClick={onApplyThreadIdFilter}
+                  onMouseEnter={(e) => {
+                    e.target.style.background = 'rgba(76, 175, 80, 0.4)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.background = 'rgba(76, 175, 80, 0.2)';
+                  }}
                 >
-                  Очистить
+                  ✓
                 </button>
-              )}
+              </div>
             </div>
           </div>
 
