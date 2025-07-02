@@ -809,10 +809,6 @@ const ReviewedChats = () => {
   const [chatIdFilter, setChatIdFilter] = useState('');
   const [checkedFilter, setCheckedFilter] = useState('');
   const [threadIdFilter, setThreadIdFilter] = useState('');
-  // Временные значения для ввода (без автоматического запроса)
-  const [chatIdInput, setChatIdInput] = useState('');
-  const [threadIdInput, setThreadIdInput] = useState('');
-  const [agentInput, setAgentInput] = useState('');
   const [createdAfterFilter, setCreatedAfterFilter] = useState('');
   const [createdBeforeFilter, setCreatedBeforeFilter] = useState('');
   const [filtersVisible, setFiltersVisible] = useState(true);
@@ -952,33 +948,15 @@ const ReviewedChats = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Объединенный useEffect для всех фильтров с оптимизированным debounce
+  // useEffect только для инициализации данных
   useEffect(() => {
-    // Не выполняем запросы до инициализации
     if (!isInitialized) return;
     
-    // Все фильтры с задержкой (текстовые поля) - убираем все ручные фильтры
-    const debouncedFilters = [];
-    // Быстрые фильтры (select и checkbox)
-    
-    // Проверяем, есть ли изменения в текстовых полях
-    const hasTextInput = debouncedFilters.some(filter => filter !== '');
-    
-    const fetchData = () => {
-      setCurrentPage(1);
-      fetchReviewedChats(1, chatColorFilter, selectedProject, userTypeFilter, agentFilter, chatIdFilter, checkedFilter, '', threadIdFilter, createdAfterFilter, createdBeforeFilter);
-    };
-    
-    // Если есть активные текстовые фильтры - используем debounce
-    if (hasTextInput) {
-      const timeoutId = setTimeout(fetchData, 500);
-      return () => clearTimeout(timeoutId);
-    } else {
-      // Для остальных фильтров - мгновенная загрузка
-      fetchData();
-    }
+    // Загружаем данные только при инициализации
+    setCurrentPage(1);
+    fetchReviewedChats(1, '', '', '', '', '', '', '', '', '', '');
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isInitialized, chatColorFilter, selectedProject, userTypeFilter, checkedFilter, createdAfterFilter, createdBeforeFilter]);
+  }, [isInitialized]);
 
   const handlePrevPage = () => {
     if (chatsData?.previous) {
@@ -993,36 +971,6 @@ const ReviewedChats = () => {
       fetchReviewedChats(nextPage, chatColorFilter, selectedProject, userTypeFilter, agentFilter, chatIdFilter, checkedFilter, '', threadIdFilter, createdAfterFilter, createdBeforeFilter);
     }
   };
-
-  const handleApplyChatIdFilter = () => {
-    setChatIdFilter(chatIdInput);
-    setCurrentPage(1);
-    fetchReviewedChats(1, chatColorFilter, selectedProject, userTypeFilter, agentFilter, chatIdInput, checkedFilter, '', threadIdFilter, createdAfterFilter, createdBeforeFilter);
-  };
-
-  const handleApplyThreadIdFilter = () => {
-    setThreadIdFilter(threadIdInput);
-    setCurrentPage(1);
-    fetchReviewedChats(1, chatColorFilter, selectedProject, userTypeFilter, agentFilter, chatIdFilter, checkedFilter, '', threadIdInput, createdAfterFilter, createdBeforeFilter);
-  };
-
-  const handleApplyAgentFilter = () => {
-    setAgentFilter(agentInput);
-    setCurrentPage(1);
-    fetchReviewedChats(1, chatColorFilter, selectedProject, userTypeFilter, agentInput, chatIdFilter, checkedFilter, '', threadIdFilter, createdAfterFilter, createdBeforeFilter);
-  };
-
-  // Синхронизация временных и примененных значений при сбросе
-  const syncFilters = () => {
-    setChatIdInput(chatIdFilter);
-    setThreadIdInput(threadIdFilter);
-    setAgentInput(agentFilter);
-  };
-
-  // Синхронизируем при изменении примененных фильтров
-  React.useEffect(() => {
-    syncFilters();
-  }, [chatIdFilter, threadIdFilter, agentFilter]);
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -1389,11 +1337,33 @@ const ReviewedChats = () => {
     if (checkedFilter) count++;
 
     if (agentFilter) count++;
-    if (chatIdFilter) count++; // Используем примененный фильтр
-    if (threadIdFilter) count++; // Используем примененный фильтр
+    if (chatIdFilter) count++;
+    if (threadIdFilter) count++;
     if (createdAfterFilter) count++;
     if (createdBeforeFilter) count++;
     return count;
+  };
+
+  // Функция для применения фильтров
+  const handleApplyFilters = () => {
+    setCurrentPage(1);
+    fetchReviewedChats(1, chatColorFilter, selectedProject, userTypeFilter, agentFilter, chatIdFilter, checkedFilter, '', threadIdFilter, createdAfterFilter, createdBeforeFilter);
+  };
+
+  // Функция для очистки всех фильтров
+  const handleClearAllFilters = () => {
+    setChatColorFilter('');
+    setSelectedProject('');
+    setUserTypeFilter('');
+    setCheckedFilter('');
+    setAgentFilter('');
+    setChatIdFilter('');
+    setThreadIdFilter('');
+    setCreatedAfterFilter('');
+    setCreatedBeforeFilter('');
+    
+    setCurrentPage(1);
+    fetchReviewedChats(1, '', '', '', '', '', '', '', '', '', '');
   };
 
   const handleSaveResult = async () => {
@@ -2552,22 +2522,18 @@ const ReviewedChats = () => {
               setUserTypeFilter={setUserTypeFilter}
               checkedFilter={checkedFilter}
               setCheckedFilter={setCheckedFilter}
-              agentFilter={agentInput}
-              setAgentFilter={setAgentInput}
-              onApplyAgentFilter={handleApplyAgentFilter}
-              appliedAgentFilter={agentFilter}
-              chatIdFilter={chatIdInput}
-              setChatIdFilter={setChatIdInput}
-              threadIdFilter={threadIdInput}
-              setThreadIdFilter={setThreadIdInput}
-              onApplyChatIdFilter={handleApplyChatIdFilter}
-              onApplyThreadIdFilter={handleApplyThreadIdFilter}
-              appliedChatIdFilter={chatIdFilter}
-              appliedThreadIdFilter={threadIdFilter}
+              agentFilter={agentFilter}
+              setAgentFilter={setAgentFilter}
+              chatIdFilter={chatIdFilter}
+              setChatIdFilter={setChatIdFilter}
+              threadIdFilter={threadIdFilter}
+              setThreadIdFilter={setThreadIdFilter}
               createdAfterFilter={createdAfterFilter}
               setCreatedAfterFilter={setCreatedAfterFilter}
               createdBeforeFilter={createdBeforeFilter}
               setCreatedBeforeFilter={setCreatedBeforeFilter}
+              onApplyFilters={handleApplyFilters}
+              onClearAllFilters={handleClearAllFilters}
             />
           )}
           

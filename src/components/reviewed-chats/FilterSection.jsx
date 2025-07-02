@@ -16,20 +16,16 @@ const FilterSection = ({
   setCheckedFilter,
   agentFilter,
   setAgentFilter,
-  onApplyAgentFilter,
-  appliedAgentFilter,
   chatIdFilter,
   setChatIdFilter,
   threadIdFilter,
   setThreadIdFilter,
-  onApplyChatIdFilter,
-  onApplyThreadIdFilter,
-  appliedChatIdFilter,
-  appliedThreadIdFilter,
   createdAfterFilter,
   setCreatedAfterFilter,
   createdBeforeFilter,
   setCreatedBeforeFilter,
+  onApplyFilters,
+  onClearAllFilters,
 }) => {
   const filtersContainerStyle = {
     marginBottom: '25px',
@@ -40,6 +36,7 @@ const FilterSection = ({
     backdropFilter: 'blur(10px)',
     overflow: 'hidden',
     transition: 'all 0.3s ease',
+    position: 'relative',
   };
 
   const filtersHeaderStyle = {
@@ -53,7 +50,7 @@ const FilterSection = ({
   };
 
   const filtersContentStyle = {
-    padding: '25px',
+    padding: '25px 25px 80px 25px',
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
     gap: '25px',
@@ -121,13 +118,6 @@ const FilterSection = ({
     marginTop: '10px'
   };
 
-  const inputInContainerStyle = {
-    ...inputStyle,
-    flex: 1,
-    width: 'auto',
-    marginTop: 0,
-  };
-
   const dateInputStyle = {
     ...inputStyle,
     colorScheme: 'dark',
@@ -143,31 +133,6 @@ const FilterSection = ({
     cursor: 'pointer',
     transition: 'all 0.2s ease',
     marginTop: '8px',
-  };
-
-  const applyButtonStyle = {
-    padding: '8px 10px',
-    background: 'rgba(76, 175, 80, 0.2)',
-    border: '1px solid rgba(76, 175, 80, 0.5)',
-    borderRadius: '8px',
-    color: '#4CAF50',
-    fontSize: '12px',
-    fontWeight: 'bold',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    height: '36px',
-    minWidth: '36px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-  };
-
-  const inputContainerStyle = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    marginTop: '10px',
   };
 
   const toggleButtonStyle = {
@@ -222,6 +187,64 @@ const FilterSection = ({
   };
 
   const activeFiltersCount = getActiveFiltersCount();
+
+  // Стили для кнопок управления фильтрами
+  const filterButtonsContainerStyle = {
+    position: 'absolute',
+    bottom: '20px',
+    right: '20px',
+    display: 'flex',
+    gap: '12px',
+    zIndex: 10,
+  };
+
+  const applyButtonStyle = {
+    padding: '12px 20px',
+    background: 'linear-gradient(135deg, #00C853 0%, #4CAF50 50%, #66BB6A 100%)',
+    border: '2px solid rgba(76, 175, 80, 0.3)',
+    borderRadius: '10px',
+    color: '#fff',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    boxShadow: '0 4px 20px rgba(76, 175, 80, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+    backdropFilter: 'blur(10px)',
+    minWidth: '130px',
+    height: '44px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
+    letterSpacing: '0.5px',
+    textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)',
+    position: 'relative',
+    overflow: 'hidden',
+  };
+
+  const clearAllButtonStyle = {
+    padding: '12px 20px',
+    background: 'linear-gradient(135deg, #FF3D00 0%, #FF5722 50%, #FF7043 100%)',
+    border: '2px solid rgba(255, 87, 34, 0.3)',
+    borderRadius: '10px',
+    color: '#fff',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    boxShadow: '0 4px 20px rgba(255, 87, 34, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+    backdropFilter: 'blur(10px)',
+    minWidth: '130px',
+    height: '44px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
+    letterSpacing: '0.5px',
+    textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)',
+    position: 'relative',
+    overflow: 'hidden',
+  };
 
   return (
     <div style={filtersContainerStyle}>
@@ -351,33 +374,22 @@ const FilterSection = ({
             </div>
 
             <div>
-              <span style={filterLabelStyle}>🧑‍💼 Агент {appliedAgentFilter && <span style={{color: '#4CAF50'}}>✓</span>}</span>
-              <div style={inputContainerStyle}>
-                <input
-                  type="text"
-                  style={inputInContainerStyle}
-                  value={agentFilter}
-                  onChange={(e) => setAgentFilter(e.target.value)}
-                  placeholder="Введите имя агента..."
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      onApplyAgentFilter();
-                    }
-                  }}
-                />
+              <span style={filterLabelStyle}>🧑‍💼 Агент</span>
+              <input
+                type="text"
+                style={inputStyle}
+                value={agentFilter}
+                onChange={(e) => setAgentFilter(e.target.value)}
+                placeholder="Введите имя агента..."
+              />
+              {agentFilter && (
                 <button
-                  style={applyButtonStyle}
-                  onClick={onApplyAgentFilter}
-                  onMouseEnter={(e) => {
-                    e.target.style.background = 'rgba(76, 175, 80, 0.4)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.background = 'rgba(76, 175, 80, 0.2)';
-                  }}
+                  style={clearButtonStyle}
+                  onClick={() => setAgentFilter('')}
                 >
-                  ✓
+                  Очистить
                 </button>
-              </div>
+              )}
             </div>
           </div>
 
@@ -386,63 +398,41 @@ const FilterSection = ({
             <h4 style={{ margin: '0 0 10px 0', color: '#fff', fontSize: '16px' }}>🔢 Идентификаторы</h4>
             
             <div>
-              <span style={filterLabelStyle}>💬 Chat ID {appliedChatIdFilter && <span style={{color: '#4CAF50'}}>✓</span>}</span>
-              <div style={inputContainerStyle}>
-                <input
-                  type="text"
-                  style={inputInContainerStyle}
-                  value={chatIdFilter}
-                  onChange={(e) => setChatIdFilter(e.target.value)}
-                  placeholder="Введите Chat ID..."
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      onApplyChatIdFilter();
-                    }
-                  }}
-                />
+              <span style={filterLabelStyle}>💬 Chat ID</span>
+              <input
+                type="text"
+                style={inputStyle}
+                value={chatIdFilter}
+                onChange={(e) => setChatIdFilter(e.target.value)}
+                placeholder="Введите Chat ID..."
+              />
+              {chatIdFilter && (
                 <button
-                  style={applyButtonStyle}
-                  onClick={onApplyChatIdFilter}
-                  onMouseEnter={(e) => {
-                    e.target.style.background = 'rgba(76, 175, 80, 0.4)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.background = 'rgba(76, 175, 80, 0.2)';
-                  }}
+                  style={clearButtonStyle}
+                  onClick={() => setChatIdFilter('')}
                 >
-                  ✓
+                  Очистить
                 </button>
-              </div>
+              )}
             </div>
 
             <div>
-              <span style={filterLabelStyle}>🧵 Thread ID {appliedThreadIdFilter && <span style={{color: '#4CAF50'}}>✓</span>}</span>
-              <div style={inputContainerStyle}>
-                <input
-                  type="text"
-                  style={inputInContainerStyle}
-                  value={threadIdFilter}
-                  onChange={(e) => setThreadIdFilter(e.target.value)}
-                  placeholder="Введите Thread ID..."
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      onApplyThreadIdFilter();
-                    }
-                  }}
-                />
+              <span style={filterLabelStyle}>🧵 Thread ID</span>
+              <input
+                type="text"
+                style={inputStyle}
+                value={threadIdFilter}
+                onChange={(e) => setThreadIdFilter(e.target.value)}
+                placeholder="Введите Thread ID..."
+              />
+              {threadIdFilter && (
                 <button
-                  style={applyButtonStyle}
-                  onClick={onApplyThreadIdFilter}
-                  onMouseEnter={(e) => {
-                    e.target.style.background = 'rgba(76, 175, 80, 0.4)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.background = 'rgba(76, 175, 80, 0.2)';
-                  }}
+                  style={clearButtonStyle}
+                  onClick={() => setThreadIdFilter('')}
                 >
-                  ✓
+                  Очистить
                 </button>
-              </div>
+              )}
             </div>
           </div>
 
@@ -485,6 +475,43 @@ const FilterSection = ({
                 </button>
               )}
             </div>
+          </div>
+
+          {/* Кнопки управления фильтрами */}
+          <div style={filterButtonsContainerStyle}>
+            <button
+              style={applyButtonStyle}
+              onClick={onApplyFilters}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-1px) scale(1.02)';
+                e.target.style.boxShadow = '0 8px 25px rgba(76, 175, 80, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)';
+                e.target.style.background = 'linear-gradient(135deg, #00E676 0%, #4CAF50 50%, #66BB6A 100%)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0) scale(1)';
+                e.target.style.boxShadow = '0 4px 20px rgba(76, 175, 80, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2)';
+                e.target.style.background = 'linear-gradient(135deg, #00C853 0%, #4CAF50 50%, #66BB6A 100%)';
+              }}
+            >
+              ✨ Применить
+            </button>
+            
+            <button
+              style={clearAllButtonStyle}
+              onClick={onClearAllFilters}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-1px) scale(1.02)';
+                e.target.style.boxShadow = '0 8px 25px rgba(255, 87, 34, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)';
+                e.target.style.background = 'linear-gradient(135deg, #FF1744 0%, #FF5722 50%, #FF7043 100%)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0) scale(1)';
+                e.target.style.boxShadow = '0 4px 20px rgba(255, 87, 34, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2)';
+                e.target.style.background = 'linear-gradient(135deg, #FF3D00 0%, #FF5722 50%, #FF7043 100%)';
+              }}
+            >
+              🧹 Очистить
+            </button>
           </div>
         </div>
       )}
