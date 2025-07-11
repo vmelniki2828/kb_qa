@@ -475,6 +475,30 @@ const AnalisChat = () => {
       const tags = await response.json();
       setResultTags(prev => ({ ...prev, [resultId]: tags }));
       
+      // Если у результата уже есть выбранные теги, проверяем их соответствие с загруженными тегами
+      const currentSelectedTags = selectedTags[resultId] || [];
+      if (currentSelectedTags.length > 0) {
+        console.log('Проверяем соответствие выбранных тегов с загруженными для результата:', resultId);
+        
+        // Обновляем выбранные теги, чтобы они соответствовали формату загруженных тегов
+        const updatedSelectedTags = currentSelectedTags.map(selectedTag => {
+          const selectedTagId = typeof selectedTag === 'object' ? selectedTag.id : selectedTag;
+          const matchingTag = tags.find(tag => {
+            const tagId = typeof tag === 'object' ? tag.id : tag;
+            return tagId === selectedTagId;
+          });
+          return matchingTag || selectedTag;
+        });
+        
+        if (updatedSelectedTags.length > 0) {
+          setSelectedTags(prev => ({
+            ...prev,
+            [resultId]: updatedSelectedTags
+          }));
+          console.log('Обновлены выбранные теги для результата:', resultId, updatedSelectedTags);
+        }
+      }
+      
     } catch (error) {
       console.error('Ошибка получения тегов:', error);
     } finally {
@@ -493,22 +517,40 @@ const AnalisChat = () => {
     // Загружаем теги при первом открытии, только если решение отрицательное
     if (!isExpanded && !resultTags[resultId] && !decision) {
       fetchResultTags(question, resultId);
+      
+      // Если у результата уже есть теги в данных чата, устанавливаем их как выбранные
+      if (chatData && chatData.results) {
+        Object.entries(chatData.results).forEach(([agentName, agentResults]) => {
+          if (Array.isArray(agentResults)) {
+            const result = agentResults.find(r => (r.pk || `${agentName}-${agentResults.indexOf(r)}`) === resultId);
+            if (result && result.tags && Array.isArray(result.tags) && result.tags.length > 0) {
+              setSelectedTags(prev => ({
+                ...prev,
+                [resultId]: result.tags
+              }));
+            }
+          }
+        });
+      }
     }
   };
 
   const toggleTagSelection = (resultId, tagObj) => {
     setSelectedTags(prev => {
       const resultTags = prev[resultId] || [];
-      const isSelected = resultTags.some(tag => 
-        (typeof tag === 'object' ? tag.id : tag) === (typeof tagObj === 'object' ? tagObj.id : tagObj)
-      );
+      const tagObjId = typeof tagObj === 'object' ? tagObj.id : tagObj;
+      const isSelected = resultTags.some(tag => {
+        const tagId = typeof tag === 'object' ? tag.id : tag;
+        return tagId === tagObjId;
+      });
       
       return {
         ...prev,
         [resultId]: isSelected 
-          ? resultTags.filter(tag => 
-              (typeof tag === 'object' ? tag.id : tag) !== (typeof tagObj === 'object' ? tagObj.id : tagObj)
-            )
+          ? resultTags.filter(tag => {
+              const tagId = typeof tag === 'object' ? tag.id : tag;
+              return tagId !== tagObjId;
+            })
           : [...resultTags, tagObj]
       };
     });
@@ -704,9 +746,41 @@ const AnalisChat = () => {
       const data = await response.json();
       console.log('Получен чат:', data);
 
-      
       // Сохраняем данные чата
       setChatData(data);
+      
+      // Автоматически устанавливаем теги как выбранные для результатов без завершающего вопроса
+      const initialSelectedTags = {};
+      if (data.results) {
+        Object.entries(data.results).forEach(([agentName, agentResults]) => {
+          if (Array.isArray(agentResults)) {
+            agentResults.forEach((result) => {
+              const resultId = result.pk || `${agentName}-${agentResults.indexOf(result)}`;
+              
+              // Если у результата есть теги и нет завершающего вопроса, устанавливаем их как выбранные
+              if (result.tags && Array.isArray(result.tags) && result.tags.length > 0 && !result.decision) {
+                initialSelectedTags[resultId] = result.tags;
+              }
+            });
+          }
+        });
+      }
+      
+      if (Object.keys(initialSelectedTags).length > 0) {
+        setSelectedTags(initialSelectedTags);
+        console.log('Автоматически выбраны теги для результатов без завершающего вопроса:', initialSelectedTags);
+        
+        // Показываем уведомление пользователю
+        const totalTags = Object.values(initialSelectedTags).reduce((sum, tags) => sum + tags.length, 0);
+        const totalResults = Object.keys(initialSelectedTags).length;
+        Notify.info(`Автоматически выбрано ${totalTags} тегов для ${totalResults} результатов без завершающего вопроса`, {
+          position: 'center-top',
+          timeout: 4000,
+          fontSize: '14px',
+          borderRadius: '8px',
+          showOnlyTheLastOne: true,
+        });
+      }
       
     } catch (error) {
       console.error('Ошибка получения чата:', error);
@@ -1004,7 +1078,7 @@ const AnalisChat = () => {
                                         justifyContent: 'space-between',
                                         alignItems: 'center'
                                       }}>
-                                        <span>Теги:</span>
+                                        <span>Теги результата (кликните для выбора):</span>
                                         {selectedTags[resultId] && selectedTags[resultId].length > 0 && (
                                           <span style={{
                                             background: 'linear-gradient(135deg, #6C47FF, #9D50FF)',
@@ -1015,6 +1089,21 @@ const AnalisChat = () => {
                                             fontWeight: 'bold'
                                           }}>
                                             {selectedTags[resultId].length} выбрано
+                                          </span>
+                                        )}
+                                        {result.tags && result.tags.length > 0 && !result.decision && (
+                                          <span style={{
+                                            background: 'linear-gradient(135deg, #FFC107, #FF9800)',
+                                            color: '#000',
+                                            padding: '2px 8px',
+                                            borderRadius: '12px',
+                                            fontSize: '10px',
+                                            fontWeight: 'bold',
+                                            marginLeft: '8px'
+                                          }}
+                                          title="Теги были автоматически выбраны из существующих данных"
+                                          >
+                                            Авто
                                           </span>
                                         )}
                                       </div>
@@ -1028,9 +1117,10 @@ const AnalisChat = () => {
                                             resultTags[resultId].map((tag, tagIndex) => {
                                               const tagName = typeof tag === 'string' ? tag : tag.name || tag.title || 'Тег';
                                               const tagId = typeof tag === 'object' ? tag.id : tag;
-                                              const isSelected = selectedTags[resultId] && selectedTags[resultId].some(selectedTag => 
-                                                (typeof selectedTag === 'object' ? selectedTag.id : selectedTag) === tagId
-                                              );
+                                              const isSelected = selectedTags[resultId] && selectedTags[resultId].some(selectedTag => {
+                                                const selectedTagId = typeof selectedTag === 'object' ? selectedTag.id : selectedTag;
+                                                return selectedTagId === tagId;
+                                              });
                                               
                                               return (
                                                 <span 
@@ -1127,19 +1217,29 @@ const AnalisChat = () => {
                               </div>
                             )}
                             {result.tags && result.tags.length > 0 && (
-                              <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                                {result.tags.map((tag, tagIndex) => (
-                                  <span key={tagIndex} style={{
-                                    background: '#FFC107',
-                                    color: '#000',
-                                    padding: '2px 5px',
-                                    borderRadius: '3px',
-                                    fontSize: '10px',
-                                    fontWeight: 'bold'
-                                  }}>
-                                    {typeof tag === 'string' ? tag : tag.name || tag.title || 'Тег'}
-                                  </span>
-                                ))}
+                              <div style={{ marginTop: '8px' }}>
+                                <div style={{ 
+                                  color: '#FFC107', 
+                                  fontSize: '10px', 
+                                  fontWeight: 'bold',
+                                  marginBottom: '4px'
+                                }}>
+                                  Существующие теги (автоматически выбраны при загрузке):
+                                </div>
+                                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                                  {result.tags.map((tag, tagIndex) => (
+                                    <span key={tagIndex} style={{
+                                      background: '#FFC107',
+                                      color: '#000',
+                                      padding: '2px 5px',
+                                      borderRadius: '3px',
+                                      fontSize: '10px',
+                                      fontWeight: 'bold'
+                                    }}>
+                                      {typeof tag === 'string' ? tag : tag.name || tag.title || 'Тег'}
+                                    </span>
+                                  ))}
+                                </div>
                               </div>
                             )}
                           </div>
