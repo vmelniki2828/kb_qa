@@ -200,6 +200,46 @@ const modalHeaderStyle = {
   alignItems: 'center',
 };
 
+const paginationContainerStyle = {
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  gap: '10px',
+  marginTop: '20px',
+  padding: '15px',
+  background: 'rgba(255,255,255,0.05)',
+  borderRadius: '12px',
+  border: '1px solid rgba(108, 71, 255, 0.2)',
+};
+
+const paginationButtonStyle = {
+  background: 'rgba(108, 71, 255, 0.2)',
+  border: '1px solid rgba(108, 71, 255, 0.3)',
+  borderRadius: '8px',
+  color: '#fff',
+  padding: '8px 12px',
+  fontSize: '14px',
+  cursor: 'pointer',
+  transition: 'all 0.2s ease',
+  minWidth: '40px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+};
+
+const paginationButtonDisabledStyle = {
+  ...paginationButtonStyle,
+  opacity: 0.5,
+  cursor: 'not-allowed',
+};
+
+const paginationInfoStyle = {
+  color: 'rgba(255,255,255,0.8)',
+  fontSize: '14px',
+  fontWeight: '500',
+  margin: '0 15px',
+};
+
 const modalBodyStyle = {
   padding: '20px',
   maxHeight: '70vh',
@@ -559,6 +599,8 @@ const AgentStats = () => {
   const [selectedTags, setSelectedTags] = useState([]);
   const [currentDecision, setCurrentDecision] = useState(true);
   const [currentComment, setCurrentComment] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(10);
   const [dateFrom, setDateFrom] = useState(() => {
     const now = new Date();
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -618,7 +660,7 @@ const AgentStats = () => {
     }
   };
 
-  const fetchPersonalChats = async (fromDate = dateFrom, toDate = dateTo) => {
+  const fetchPersonalChats = async (fromDate = dateFrom, toDate = dateTo, page = currentPage) => {
     try {
       setLoadingChats(true);
       setChatsError(null);
@@ -632,11 +674,12 @@ const AgentStats = () => {
 
       const { access } = JSON.parse(tokens);
       
-      // Формируем URL с параметрами дат
+      // Формируем URL с параметрами дат и пагинации
       const params = new URLSearchParams({
         created_at_after: fromDate,
         created_at_before: toDate,
-        page: '1'
+        page: page.toString(),
+        page_size: pageSize.toString()
       });
       
       const url = `https://cb-tools.qodeq.net/api/chatqa/reviewed-chats/personal/${id}/?${params.toString()}`;
@@ -669,10 +712,34 @@ const AgentStats = () => {
   useEffect(() => {
     if (id) {
       fetchAgentStatistics();
+      setCurrentPage(1); // Сбрасываем на первую страницу при изменении дат
       fetchPersonalChats();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, dateFrom, dateTo]);
+
+  useEffect(() => {
+    if (id) {
+      fetchPersonalChats(dateFrom, dateTo, currentPage);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage]);
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (personalChats && personalChats.next) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
 
 
 
@@ -2304,6 +2371,66 @@ const AgentStats = () => {
                   fontSize: '14px'
                 }}>
                   Всего чатов: {personalChats.count}
+                </div>
+              )}
+              
+              {/* Пагинация */}
+              {personalChats && (personalChats.next || personalChats.previous) && (
+                <div style={paginationContainerStyle}>
+                  <button
+                    onClick={handlePrevPage}
+                    disabled={!personalChats.previous || loadingChats}
+                    style={personalChats.previous && !loadingChats ? paginationButtonStyle : paginationButtonDisabledStyle}
+                    onMouseEnter={(e) => {
+                      if (personalChats.previous && !loadingChats) {
+                        e.target.style.background = 'rgba(108, 71, 255, 0.3)';
+                        e.target.style.transform = 'translateY(-1px)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (personalChats.previous && !loadingChats) {
+                        e.target.style.background = 'rgba(108, 71, 255, 0.2)';
+                        e.target.style.transform = 'translateY(0)';
+                      }
+                    }}
+                  >
+                    ←
+                  </button>
+                  
+                  <div style={paginationInfoStyle}>
+                    {loadingChats ? (
+                      <span style={{ color: 'rgba(255,255,255,0.6)' }}>Загрузка...</span>
+                    ) : (
+                      <>
+                        Страница {currentPage}
+                        {personalChats.count && (
+                          <span style={{ marginLeft: '8px', color: 'rgba(255,255,255,0.6)' }}>
+                            из {Math.ceil(personalChats.count / pageSize)}
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </div>
+                  
+                  <button
+                    onClick={handleNextPage}
+                    disabled={!personalChats.next || loadingChats}
+                    style={personalChats.next && !loadingChats ? paginationButtonStyle : paginationButtonDisabledStyle}
+                    onMouseEnter={(e) => {
+                      if (personalChats.next && !loadingChats) {
+                        e.target.style.background = 'rgba(108, 71, 255, 0.3)';
+                        e.target.style.transform = 'translateY(-1px)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (personalChats.next && !loadingChats) {
+                        e.target.style.background = 'rgba(108, 71, 255, 0.2)';
+                        e.target.style.transform = 'translateY(0)';
+                      }
+                    }}
+                  >
+                    →
+                  </button>
                 </div>
               )}
             </div>
