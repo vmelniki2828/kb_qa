@@ -398,13 +398,13 @@ const FilterSection = ({
             <h4 style={{ margin: '0 0 10px 0', color: '#fff', fontSize: '16px' }}>🔢 Идентификаторы</h4>
             
             <div>
-              <span style={filterLabelStyle}>💬 Chat ID</span>
+              <span style={filterLabelStyle}>🧵 Thread ID</span>
               <input
                 type="text"
                 style={inputStyle}
                 value={chatIdFilter}
                 onChange={(e) => setChatIdFilter(e.target.value)}
-                placeholder="Введите Chat ID..."
+                placeholder="Введите Thread ID..."
               />
               {chatIdFilter && (
                 <button
@@ -417,13 +417,13 @@ const FilterSection = ({
             </div>
 
             <div>
-              <span style={filterLabelStyle}>🧵 Thread ID</span>
+              <span style={filterLabelStyle}>💬 Chat ID</span>
               <input
                 type="text"
                 style={inputStyle}
                 value={threadIdFilter}
                 onChange={(e) => setThreadIdFilter(e.target.value)}
-                placeholder="Введите Thread ID..."
+                placeholder="Введите Chat ID..."
               />
               {threadIdFilter && (
                 <button
