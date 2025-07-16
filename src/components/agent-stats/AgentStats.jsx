@@ -1156,12 +1156,12 @@ const AgentStats = () => {
               <h3 style={{ margin: '0 0 15px 0', color: '#6C47FF', fontSize: '16px' }}>Информация о чате</h3>
               
               <div style={infoRowStyle}>
-                <span style={infoLabelStyle}>Chat ID:</span>
+                <span style={infoLabelStyle}>Thread ID:</span>
                 <span style={infoValueStyle}>{selectedChat.chat_id}</span>
               </div>
               
               <div style={infoRowStyle}>
-                <span style={infoLabelStyle}>Thread ID:</span>
+                <span style={infoLabelStyle}>Chat ID:</span>
                 <span style={infoValueStyle}>{selectedChat.thread_id}</span>
               </div>
               
