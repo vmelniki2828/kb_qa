@@ -1,6 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { MdEdit, MdRefresh, MdFilterList, MdClear, MdCheck, MdClose, MdExpandMore, MdExpandLess, MdVisibility, MdVisibilityOff } from 'react-icons/md';
+import { Notify } from 'notiflix';
 import Sidebar from '../Sidebar';
 import FilterSection from './FilterSection';
+import { useApi } from '../../hooks/useApi';
 
 const mainBg = {
   minHeight: '100vh',
@@ -786,6 +790,10 @@ const injectStyles = () => {
 };
 
 const ReviewedChats = () => {
+  const { apiRequest } = useApi();
+  const navigate = useNavigate();
+  const { chatId } = useParams();
+  
   const [chatsData, setChatsData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -821,23 +829,9 @@ const ReviewedChats = () => {
   }, []);
 
   const fetchReviewedChats = async (page = 1, colorFilter = '', projectFilter = '', userType = '', username = '', chatId = '', checked = '', status = '', threadId = '', createdAfter = '', createdBefore = '') => {
-    // Предотвращаем дублирующиеся запросы
-    if (isRequestInProgress) {
-      console.log('Запрос уже выполняется, пропускаем...');
-      return;
-    }
-    
     try {
       setIsRequestInProgress(true);
       setLoading(true);
-      const tokens = localStorage.getItem('tokens');
-      if (!tokens) {
-        setError('Токен не найден');
-        setLoading(false);
-        return;
-      }
-
-      const { access } = JSON.parse(tokens);
       
       // Формируем URL с параметрами
       let url = `https://cb-tools.qodeq.net/api/chatqa/reviewed-chats?page=${page}`;
@@ -872,17 +866,9 @@ const ReviewedChats = () => {
         url += `&created_at_before=${createdBefore}`;
       }
       
-      const response = await fetch(url, {
+      const response = await apiRequest(url, {
         method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${access}`,
-          'Content-Type': 'application/json',
-        },
       });
-
-      if (!response.ok) {
-        throw new Error(`Ошибка: ${response.status}`);
-      }
 
       const data = await response.json();
       setChatsData(data);
@@ -902,26 +888,10 @@ const ReviewedChats = () => {
   const fetchProjects = async () => {
     try {
       setLoadingProjects(true);
-      const tokens = localStorage.getItem('tokens');
-      if (!tokens) {
-        console.error('Токен не найден для загрузки проектов');
-        setLoadingProjects(false);
-        return;
-      }
-
-      const { access } = JSON.parse(tokens);
       
-      const response = await fetch('https://cb-tools.qodeq.net/api/chatqa/projects', {
+      const response = await apiRequest('https://cb-tools.qodeq.net/api/chatqa/projects', {
         method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${access}`,
-          'Content-Type': 'application/json',
-        },
       });
-
-      if (!response.ok) {
-        throw new Error(`Ошибка загрузки проектов: ${response.status}`);
-      }
 
       const data = await response.json();
       setProjectsData(data);

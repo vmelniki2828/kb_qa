@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { LoginWrapper, Form, Title, Input, Button } from './LoginForm.styled';
 
 const LoginForm = () => {
@@ -7,7 +7,20 @@ const LoginForm = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [tokenExpired, setTokenExpired] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    // Очищаем старые токены при загрузке компонента
+    localStorage.removeItem('tokens');
+    localStorage.removeItem('userData');
+    
+    // Проверяем, был ли пользователь перенаправлен из-за истечения токена
+    if (location.state?.from) {
+      setTokenExpired(true);
+    }
+  }, [location.state]);
 
   const fetchUserData = async (accessToken) => {
     try {
@@ -36,6 +49,7 @@ const LoginForm = () => {
     e.preventDefault();
     setError('');
     setSuccess('');
+    setTokenExpired(false);
     
     const credentials = { username, password };
     
@@ -72,6 +86,19 @@ const LoginForm = () => {
     <LoginWrapper>
       <Form onSubmit={handleSubmit}>
         <Title>Вход</Title>
+        {tokenExpired && (
+          <div style={{ 
+            color: '#ff6b6b', 
+            marginBottom: '16px', 
+            padding: '12px', 
+            backgroundColor: '#ffe6e6', 
+            borderRadius: '4px',
+            border: '1px solid #ff6b6b',
+            fontSize: '14px'
+          }}>
+            ⚠️ Ваша сессия истекла. Пожалуйста, войдите в систему снова.
+          </div>
+        )}
         <Input
           type="text"
           placeholder="Имя пользователя"
